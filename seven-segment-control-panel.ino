@@ -1,11 +1,11 @@
 //**************************************************************//
-//  Name    : shiftOutCode, Hello World                                
-//  Author  : Carlyn Maw,Tom Igoe, David A. Mellis 
-//  Date    : 25 Oct, 2006    
-//  Modified: 23 Mar 2010                                 
-//  Version : 2.0                                             
-//  Notes   : Code for using a 74HC595 Shift Register           //
-//          : to count from 0 to 255                           
+//  Name    : 7 Segment Count up                            
+//  Author  : Rob Moncur
+//  Date    : 5 March 2016
+//  Modified: 5 March 2016                                
+//  Version : 1.0                                             
+//  Notes   : Code to drive 7 segment display for Moncur        //
+//          : control panel. Counts up when swithc is engaged.                      
 //****************************************************************
 
 #include <Time.h>
@@ -14,6 +14,7 @@
 int latchPin = 11; //Pin connected to ST_CP of 74HC595
 int clockPin = 10; //Pin connected to SH_CP of 74HC595
 int dataPin = 12;  //Pin connected to DS of 74HC595
+int switchPin = 8;
 int d1 = 2;        //Pin connected to digit 1
 int d2 = 3;        //Pin connected to digit 2
 int d3 = 4;        //Pin connected to digit 3
@@ -37,10 +38,16 @@ void setup() {
   digitOn(d3);
   digitOn(d4);
 
-  //displayNumber(2);
-  //digitalWrite(latchPin, LOW);// take the latchPin low so the LEDs don't change while you're sending in bits:
-  //shiftOut(dataPin, clockPin, MSBFIRST, 2); // shift out the bits: 
-  //digitalWrite(latchPin, HIGH); //take the latch pin high so the LEDs will light up:
+  //reading from pin 13. It is the switch
+  pinMode(switchPin, INPUT_PULLUP);
+
+  //pinMode(8,OUTPUT);
+  //pinMode(9,OUTPUT);
+  //digitalWrite(8,LOW);
+  //digitalWrite(9,HIGH);
+
+  Serial.begin(9600); 
+
 }
 
 void loop() {
@@ -64,49 +71,48 @@ void loop() {
     digit2 = String(m);
   }
 
-  int mydelay = 3;
+  int switchState = digitalRead(switchPin);
+  if(switchState == HIGH){
 
-  digitOn(d1);
-  digitOff(d2);
-  digitOff(d3);
-  digitOff(d4);
-  displayNumber(digit1);
-  delay(mydelay);
+    int mydelay = 3;
 
-  digitOff(d1);
-  digitOn(d2);
-  digitOff(d3);
-  digitOff(d4);
-  displayNumber(digit2);
-  delay(mydelay);
-
-  digitOff(d1);
-  digitOff(d2);
-  digitOn(d3);
-  digitOff(d4);
-  displayNumber(digit3);
-  delay(mydelay);
-
-  digitOff(d1);
-  digitOff(d2);
-  digitOff(d3);
-  digitOn(d4);
-  displayNumber(digit4);
-  delay(mydelay);
-
-  /*  
-  for (int numberToDisplay = 0; numberToDisplay < 10; numberToDisplay++) {
-    displayNumber(numberToDisplay);
-    delay(1000);
-
-    if( numberToDisplay % 2 == 0 ){
-      pinMode(2, OUTPUT);
-      digitalWrite(2,LOW);
-    } else {
-      pinMode(2, INPUT);      
-    }
+    //Turning each digit on and off so fast it looks like they are static
+    digitOn(d1);
+    digitOff(d2);
+    digitOff(d3);
+    digitOff(d4);
+    displayNumber(digit1);
+    delay(mydelay);
+  
+    digitOff(d1);
+    digitOn(d2);
+    digitOff(d3);
+    digitOff(d4);
+    displayNumber(digit2);
+    delay(mydelay);
+  
+    digitOff(d1);
+    digitOff(d2);
+    digitOn(d3);
+    digitOff(d4);
+    displayNumber(digit3);
+    delay(mydelay);
+  
+    digitOff(d1);
+    digitOff(d2);
+    digitOff(d3);
+    digitOn(d4);
+    displayNumber(digit4);
+    delay(mydelay);
+    
+  } else {
+    digitOff(d1);
+    digitOff(d2);
+    digitOff(d3);
+    digitOff(d4);
+    setTime(0); 
   }
-  */
+  
 
 }
 
@@ -122,7 +128,7 @@ void digitOff(int d){
 void displayNumber(String digit){
 
   int code = 0;
-  if(digit == "0"){code = 126;}
+  if     (digit == "0"){code = 126;}
   else if(digit == "1"){code = 12;}
   else if(digit == "2"){code = 182;}
   else if(digit == "3"){code = 158;}
@@ -134,22 +140,7 @@ void displayNumber(String digit){
   else if(digit == "9"){code = 222;}
   else if(digit == "l"){code = 112;}
   else if(digit == "a"){code = 238;}
-/*
-  switch(digit){
-    case "0": code = 126; break;
-    case "1": code = 12; break;
-    case "2": code = 182; break;
-    case "3": code = 158; break;
-    case "4": code = 204; break;
-    case "5": code = 218; break;
-    case "6": code = 250; break;
-    case "7": code = 14; break;
-    case "8": code = 254; break;
-    case "9": code = 222; break;
-    case "L": code = 112; break;
-    case "A": code = 238; break;
-  }
-*/
+
    digitalWrite(latchPin, LOW);// take the latchPin low so the LEDs don't change while you're sending in bits:
    shiftOut(dataPin, clockPin, MSBFIRST, code); // shift out the bits: 
    digitalWrite(latchPin, HIGH); //take the latch pin high so the LEDs will light up:
